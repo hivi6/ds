@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 // vector
 //
@@ -23,6 +24,24 @@ int  vector_pop(struct vector_t *vector);
 int  vector_get(struct vector_t *vector, int index, void *item, int size);
 int  vector_set(struct vector_t *vector, int index, void *item, int size);
 void vector_delete(struct vector_t *vector);
+
+// string builder
+//
+// string builder helps you to build strings
+// it uses the vector type to grow dynamically
+struct string_builder_t {
+        struct vector_t chars;
+};
+
+void string_builder_init(struct string_builder_t *sb);
+int string_builder_append(struct string_builder_t *sb, const char *format, 
+                          ...);
+int string_builder_appendn(struct string_builder_t *sb, const char *str,
+                           int len);
+int string_builder_appendc(struct string_builder_t *sb, char ch);
+int string_builder_appendcn(struct string_builder_t *sb, char ch, int len);
+int string_builder_build(struct string_builder_t *sb, char **str);
+void string_builder_delete(struct string_builder_t *sb);
 
 #endif // DH_H
 
@@ -144,6 +163,9 @@ int vector_set(struct vector_t *vector, int index, void *item, int size) {
 // frees the item space that was allocated
 // set all the fields to zero
 void vector_delete(struct vector_t *vector) {
+        for (int i = 0; i < vector->count; i++) {
+                free(vector->items[i]);
+        }
         free(vector->items);
         free(vector->sizes);
 
@@ -151,6 +173,74 @@ void vector_delete(struct vector_t *vector) {
         vector->capacity = 0;
         vector->items = NULL;
         vector->sizes = NULL;
+}
+
+void string_builder_init(struct string_builder_t *sb) {
+        vector_init(&sb->chars);
+}
+
+int string_builder_append(struct string_builder_t *sb, const char *format,
+                          ...) {
+        va_list args;
+        va_start(args, format);
+        int needed = vsnprintf(NULL, 0, format, args);
+        va_end(args);
+
+        char *buffer = malloc((needed + 1) * sizeof(char));
+        if (buffer == NULL) {
+                return -1;
+        }
+
+        va_start(args, format);
+        vsnprintf(buffer, needed + 1, format, args);
+        va_end(args);
+
+        for (int i = 0; i < needed + 1; i++) {
+                vector_append(&sb->chars, (void *)&buffer[i], sizeof(char));
+        }
+        free(buffer);
+
+        return 0;
+}
+
+int string_builder_appendn(struct string_builder_t *sb, const char *str,
+                           int len) {
+        for (int i = 0; i < len; i++) {
+                for (int j = 0; str[j]; j++) {
+                        vector_append(&sb->chars, (void*)&str[j], sizeof(char));
+                }
+        }
+        return 0;
+}
+
+int string_builder_appendc(struct string_builder_t *sb, char ch) {
+        vector_append(&sb->chars, &ch, sizeof(char));
+        return 0;
+}
+
+int string_builder_appendcn(struct string_builder_t *sb, char ch, int len) {
+        for (int i = 0; i < len; i++) {
+                vector_append(&sb->chars, &ch, sizeof(char));
+        }
+        return 0;
+}
+
+int string_builder_build(struct string_builder_t *sb, char **str) {
+        *str = malloc(sizeof(char) * sb->chars.count + 1);
+        if (str == NULL) {
+                return -1;
+        }
+
+        for (int i = 0; i < sb->chars.count; i++) {
+                vector_get(&sb->chars, i, *str + i, sizeof(char));
+        }
+        (*str)[sb->chars.count] = 0;
+
+        return 0;
+}
+
+void string_builder_delete(struct string_builder_t *sb) {
+        vector_delete(&sb->chars);
 }
 
 #endif // DS_IMPLEMENTATION

@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+
 #define DS_IMPLEMENTATION
 #include "ds.h"
 
@@ -53,6 +54,8 @@ int main() {
                 vector_get(&vector, i, &value, sizeof(value));
                 printf("%d-th value: %d\n", i, value);
         }
+
+        vector_delete(&vector);
 
         return 0;
 }

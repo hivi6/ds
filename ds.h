@@ -33,6 +33,10 @@ void vector_delete(struct vector_t *vector);
 
 #ifdef DS_IMPLEMENTATION
 
+// initialize the vector
+//
+// keeps count, capacity as 0
+// keeps items, sizes as NULL
 void vector_init(struct vector_t *vector) {
         vector->items = NULL;
         vector->sizes = NULL;
@@ -40,6 +44,11 @@ void vector_init(struct vector_t *vector) {
         vector->capacity = 0;
 }
 
+// append an item to the vector
+//
+// returns 0 if item was successfully appended
+// returns -1 if something went wrong while allocating memory
+// allocates 8 value at a time if max capacity is reached
 int vector_append(struct vector_t *vector, void *item, int size) {
         if (vector->count >= vector->capacity) {
                 vector->capacity += 8;
@@ -69,6 +78,10 @@ int vector_append(struct vector_t *vector, void *item, int size) {
         return 0;
 }
 
+// get the top value of the vector
+//
+// returns 0 if the top value exists
+// returns -1 if the top value doesnot exists, i.e. no value exists
 int vector_top(struct vector_t *vector, void *item, int size) {
         if (vector->count <= 0 || vector->sizes[vector->count - 1] != size) {
                 return -1;
@@ -79,6 +92,10 @@ int vector_top(struct vector_t *vector, void *item, int size) {
         return 0;
 }
 
+// removes the last value of the vector
+//
+// returns 0 if the last value was removed
+// returns -1 if last value was not found
 int vector_pop(struct vector_t *vector) {
         if (vector->count <= 0) {
                 return -1;
@@ -90,6 +107,10 @@ int vector_pop(struct vector_t *vector) {
         return 0;
 }
 
+// get the value at a specific index
+//
+// returns 0 if index is within the valid range, i.e. 0 <= index < items.count
+// returns -1 if index is outside the valid range
 int vector_get(struct vector_t *vector, int index, void *item, int size) {
         if (index < 0 || index >= vector->count || 
                         vector->sizes[vector->count - 1] != size) {
@@ -101,6 +122,10 @@ int vector_get(struct vector_t *vector, int index, void *item, int size) {
         return 0;
 }
 
+// set the value at a specific index
+//
+// returns 0 if index is within the valid range, i.e. 0 <= index < items.count
+// returns -1 if index is outside the valid range
 int vector_set(struct vector_t *vector, int index, void *item, int size) {
         if (index < 0 || index >= vector->count) {
                 return -1;
@@ -114,6 +139,10 @@ int vector_set(struct vector_t *vector, int index, void *item, int size) {
         return 0;
 }
 
+// delete the vector
+//
+// frees the item space that was allocated
+// set all the fields to zero
 void vector_delete(struct vector_t *vector) {
         free(vector->items);
         free(vector->sizes);

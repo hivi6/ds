@@ -177,10 +177,20 @@ void vector_delete(struct vector_t *vector) {
         vector->sizes = NULL;
 }
 
+// initialize a string builder
+//
+// it uses vector under the hood
 void string_builder_init(struct string_builder_t *sb) {
         vector_init(&sb->chars);
 }
 
+// append a formated string like printf
+//
+// uses vsnprintf to calculate the final string
+// and then allocate the required memory
+// and append the final string to the string_builder
+// returns 0 if nothing went wrong while appending the string
+// returns -1 if something went wrong
 int string_builder_append(struct string_builder_t *sb, const char *format,
                           ...) {
         va_list args;
@@ -205,6 +215,10 @@ int string_builder_append(struct string_builder_t *sb, const char *format,
         return 0;
 }
 
+// append a given string n times
+//
+// return 0 if nothing went wrong
+// returns -1 if something went wrong
 int string_builder_appendn(struct string_builder_t *sb, const char *str,
                            int len) {
         for (int i = 0; i < len; i++) {
@@ -215,11 +229,18 @@ int string_builder_appendn(struct string_builder_t *sb, const char *str,
         return 0;
 }
 
+// append a given character
+// 
+// return 0 if nothing went wrong
+// return -1 if something went wrong
 int string_builder_appendc(struct string_builder_t *sb, char ch) {
         vector_append(&sb->chars, &ch, sizeof(char));
         return 0;
 }
 
+// append a given character n times
+//
+// returns 0 if nothing went wrong
 int string_builder_appendcn(struct string_builder_t *sb, char ch, int len) {
         for (int i = 0; i < len; i++) {
                 vector_append(&sb->chars, &ch, sizeof(char));
@@ -227,6 +248,9 @@ int string_builder_appendcn(struct string_builder_t *sb, char ch, int len) {
         return 0;
 }
 
+// build the string and allocate the string to the provided pointer
+//
+// returns 0 if nothing goes wrong
 int string_builder_build(struct string_builder_t *sb, char **str) {
         *str = malloc(sizeof(char) * sb->chars.count + 1);
         if (str == NULL) {
@@ -241,10 +265,15 @@ int string_builder_build(struct string_builder_t *sb, char **str) {
         return 0;
 }
 
+// delete the string builder
 void string_builder_delete(struct string_builder_t *sb) {
         vector_delete(&sb->chars);
 }
 
+// get the character at a given index
+// 
+// returns character value at a given index
+// returns 0 if something went wrong
 char string_builder_get(struct string_builder_t *sb, int index) {
         char ch;
         if (vector_get(&sb->chars, index, (void*)&ch, sizeof(ch))) {
@@ -253,6 +282,9 @@ char string_builder_get(struct string_builder_t *sb, int index) {
         return ch;
 }
 
+// set the character at a given index
+//
+// returns -1 if something went wrong
 int string_builder_set(struct string_builder_t *sb, int index, char ch) {
         return vector_set(&sb->chars, index, (void*)&ch, sizeof(ch));
 }

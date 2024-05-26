@@ -40,6 +40,8 @@ int string_builder_appendn(struct string_builder_t *sb, const char *str,
                            int len);
 int string_builder_appendc(struct string_builder_t *sb, char ch);
 int string_builder_appendcn(struct string_builder_t *sb, char ch, int len);
+char string_builder_get(struct string_builder_t *sb, int index);
+int string_builder_set(struct string_builder_t *sb, int index, char ch);
 int string_builder_build(struct string_builder_t *sb, char **str);
 void string_builder_delete(struct string_builder_t *sb);
 
@@ -241,6 +243,18 @@ int string_builder_build(struct string_builder_t *sb, char **str) {
 
 void string_builder_delete(struct string_builder_t *sb) {
         vector_delete(&sb->chars);
+}
+
+char string_builder_get(struct string_builder_t *sb, int index) {
+        char ch;
+        if (vector_get(&sb->chars, index, (void*)&ch, sizeof(ch))) {
+                return 0;
+        }
+        return ch;
+}
+
+int string_builder_set(struct string_builder_t *sb, int index, char ch) {
+        return vector_set(&sb->chars, index, (void*)&ch, sizeof(ch));
 }
 
 #endif // DS_IMPLEMENTATION

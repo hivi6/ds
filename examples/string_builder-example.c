@@ -23,6 +23,13 @@ int main() {
         // append some moreee string
         string_builder_append(&sb, " abc-%d", 1000);
 
+        // get the character at a given index
+        printf("0th index: %c\n", string_builder_get(&sb, 0));
+
+        // set the character at a given index
+        printf("Changing 0th index to ' '\n");
+        string_builder_set(&sb, 0, ' ');
+
         // build the string
         char *res;
         string_builder_build(&sb, &res);

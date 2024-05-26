@@ -4,6 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+// vector
+//
+// vector is an array that grows dynamically
+// implementation wise the array grows 8 items at a time
+// this is a generic implementation and can be used with any type
 struct vector_t {
         void **items;
         int  *sizes;
@@ -19,7 +24,7 @@ int  vector_get(struct vector_t *vector, int index, void *item, int size);
 int  vector_set(struct vector_t *vector, int index, void *item, int size);
 void vector_delete(struct vector_t *vector);
 
-#endif // VECTOR_H
+#endif // DH_H
 
 ///////////////////////////////////////////////////////////////////////////////
 //

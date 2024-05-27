@@ -12,16 +12,20 @@ int main() {
         // append some string
         string_builder_appendn(&sb, "abc-xyz ", 3);
 
-        // append some more stirng
+        // append some more string
+        string_builder_append(&sb, "hue-hue ");
+        string_builder_append(&sb, "hue-hue ");
+
+        // append some moree stirng
         string_builder_appendc(&sb, '(');
         string_builder_appendc(&sb, ')');
         string_builder_appendc(&sb, ' ');
         
-        // append some moree string
+        // append some moreee string
         string_builder_appendcn(&sb, '0', 10);
 
-        // append some moreee string
-        string_builder_append(&sb, " abc-%d", 1000);
+        // append some moreeee string
+        string_builder_appendf(&sb, " abc-%d", 1000);
 
         // get the character at a given index
         printf("0th index: %c\n", string_builder_get(&sb, 0));

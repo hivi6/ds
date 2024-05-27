@@ -34,10 +34,11 @@ struct string_builder_t {
 };
 
 void string_builder_init(struct string_builder_t *sb);
-int string_builder_append(struct string_builder_t *sb, const char *format, 
+int string_builder_appendf(struct string_builder_t *sb, const char *format, 
                           ...);
 int string_builder_appendn(struct string_builder_t *sb, const char *str,
                            int len);
+int string_builder_append(struct string_builder_t *sb, const char *str);
 int string_builder_appendc(struct string_builder_t *sb, char ch);
 int string_builder_appendcn(struct string_builder_t *sb, char ch, int len);
 char string_builder_get(struct string_builder_t *sb, int index);
@@ -191,7 +192,7 @@ void string_builder_init(struct string_builder_t *sb) {
 // and append the final string to the string_builder
 // returns 0 if nothing went wrong while appending the string
 // returns -1 if something went wrong
-int string_builder_append(struct string_builder_t *sb, const char *format,
+int string_builder_appendf(struct string_builder_t *sb, const char *format,
                           ...) {
         va_list args;
         va_start(args, format);
@@ -217,7 +218,7 @@ int string_builder_append(struct string_builder_t *sb, const char *format,
 
 // append a given string n times
 //
-// return 0 if nothing went wrong
+// returns 0 if nothing went wrong
 // returns -1 if something went wrong
 int string_builder_appendn(struct string_builder_t *sb, const char *str,
                            int len) {
@@ -227,6 +228,13 @@ int string_builder_appendn(struct string_builder_t *sb, const char *str,
                 }
         }
         return 0;
+}
+
+// append a given string
+//
+// returns 0 if nothing went wrong
+int string_builder_append(struct string_builder_t *sb, const char *str) {
+        return string_builder_appendn(sb, str, 1);
 }
 
 // append a given character

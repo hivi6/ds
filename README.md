@@ -5,6 +5,7 @@ single header, data structure library in C.
 ## Supported data structures
 
 - vector (dynamic array)
+- string builder
 
 ## Usages
 

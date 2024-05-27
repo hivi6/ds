@@ -1,6 +1,7 @@
 #ifndef DS_H
 #define DS_H
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
@@ -12,6 +13,8 @@ enum ds_error_enum {
         DS_EMPTY_ERROR,         // accessing elements when there is nothing
         DS_SIZE_ERROR,          // argument size doesnot match with stored size
         DS_RANGE_ERROR,         // index out of range error
+        DS_EXPECTED_ERROR,      // something more expected
+        DS_SOMETHING_WENT_WRONG,// soemthing went wrong
         DS_NUM_OF_ERRORS        // this is not an error
 };
 
@@ -58,6 +61,46 @@ int string_builder_set(struct string_builder_t *sb, int index, char ch);
 int string_builder_build(struct string_builder_t *sb, char **str);
 int string_builder_delete(struct string_builder_t *sb);
 
+// argument parser
+//
+// a simple argument parser for parsing command line arguments
+enum ap_argument_enum {
+        AP_FLAG,       // flag
+        AP_FVALUE,     // flag with value
+};
+
+struct ap_argument_t {
+        // information provided by the user
+        enum ap_argument_enum type;
+        const char *short_name;
+        const char *long_name;
+        const char *description;
+
+        // information generated after parsing
+        char is_exists;         // if the flag exists
+        const char *value;      // value when type is AP_FVALUE
+};
+
+int ap_argument_init(struct ap_argument_t *arg, enum ap_argument_enum type,
+                     const char *short_name, const char *long_name,
+                     const char *description);
+int ap_argument_delete(struct ap_argument_t *arg);
+
+struct ap_parser_t {
+        const char *program_name;
+        const char *version;
+        const char *description;
+        struct vector_t arguments;
+};
+
+int ap_parser_init(struct ap_parser_t *parser, const char *program_name, 
+                   const char *version, const char *description);
+int ap_parser_add_argument(struct ap_parser_t *parser, 
+                           struct ap_argument_t *argument);
+int ap_parser_parse(struct ap_parser_t *parser, int argc, const char **argv);
+int ap_parser_usage(struct ap_parser_t *parser);
+int ap_parser_delete(struct ap_parser_t *parser);
+
 #endif // DH_H
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -75,12 +118,14 @@ void ds_print_error(enum ds_error_enum err) {
                 "no items",
                 "invalid size",
                 "out of range",
+                "something more was expected",
+                "something went wrong",
         };
         if (err >= DS_NUM_OF_ERRORS) {
                 printf("invalid error no\n");
                 return;
         }
-        printf("%s", error_msgs[err]);
+        printf("%s\n", error_msgs[err]);
 }
 
 // initialize the vector
@@ -398,6 +443,146 @@ int string_builder_set(struct string_builder_t *sb, int index, char ch) {
                 return DS_ARGUMENT_ERROR;
         }
         return vector_set(&sb->chars, index, (void*)&ch, sizeof(ch));
+}
+
+int ap_argument_init(struct ap_argument_t *arg, enum ap_argument_enum type,
+                     const char *short_name, const char *long_name, 
+                     const char *description) {
+        if (arg == NULL || short_name == NULL || long_name == NULL || 
+                description == NULL) {
+                return DS_ARGUMENT_ERROR;
+        }
+
+        arg->type = type;
+        arg->short_name = short_name;
+        arg->long_name = long_name;
+        arg->description = description;
+
+        arg->is_exists = 0;
+        arg->value = NULL;
+
+        return DS_NO_ERROR;
+}
+
+int ap_argument_delete(struct ap_argument_t *arg) {
+        if (arg == NULL) {
+                return DS_ARGUMENT_ERROR;
+        }
+
+        arg->is_exists = 0;
+        arg->value = NULL;
+        return DS_NO_ERROR;
+}
+
+int ap_parser_init(struct ap_parser_t *parser, const char *program_name, 
+                   const char *version, const char *description) {
+        if (parser == NULL || program_name == NULL || version == NULL || 
+            description == NULL) {
+                return DS_ARGUMENT_ERROR;
+        }
+
+        parser->program_name = program_name;
+        parser->version = version;
+        parser->description = description;
+        return vector_init(&parser->arguments);
+}
+
+int ap_parser_add_argument(struct ap_parser_t *parser, 
+                           struct ap_argument_t *argument) {
+        if (parser == NULL || argument == NULL) {
+                return DS_ARGUMENT_ERROR;
+        }
+
+        return vector_append(&parser->arguments, &argument, sizeof(argument));
+}
+
+int ap_parser_parse(struct ap_parser_t *parser, int argc, const char **argv) {
+        if (parser == NULL || argv == NULL) {
+                return DS_ARGUMENT_ERROR;
+        }
+
+        int i = 1;
+        while (i < argc) {
+                char found = 0;
+                for (int j = 0; j < parser->arguments.count; j++) {
+                        struct ap_argument_t *argument;
+                        int err = vector_get(&parser->arguments, j,
+                                             (void*)&argument, 
+                                             sizeof(argument));
+                        if (err) {
+                                return err;
+                        }
+
+                        if ((argument->short_name != NULL && 
+                            strcmp(argv[i], argument->short_name) == 0) ||
+                            (argument->long_name != NULL &&
+                            strcmp(argv[i], argument->long_name) == 0)) {
+                                argument->is_exists = 1;
+                                if (argument->type == AP_FLAG) {
+                                        i++;
+                                } else {
+                                        if (i + 1 >= argc) {
+                                                return DS_EXPECTED_ERROR;
+                                        }
+                                        argument->value = argv[i + 1];
+                                        i += 2;
+                                }
+                                found = 1;
+                                break;
+                        }
+                }
+
+                if (!found) {
+                        break;
+                }
+        }
+
+        if (i == argc) {
+                return DS_NO_ERROR;
+        }
+        return DS_SOMETHING_WENT_WRONG;
+}
+
+int ap_parser_usage(struct ap_parser_t *parser) {
+        printf("Description:\n  %s\n\n", parser->description);
+        printf("Version: %s\n\n", parser->version);
+        printf("Usage:\n  %s [options]\n\n", parser->program_name);
+        printf("Options:\n");
+
+        for (int i = 0; i < parser->arguments.count; i++) {
+                struct ap_argument_t *argument;
+                int err = vector_get(&parser->arguments, i, (void*)&argument, 
+                                     sizeof(argument));
+                if (err) {
+                        return err;
+                }
+
+                struct string_builder_t sb;
+                string_builder_init(&sb);
+                string_builder_append(&sb, "  ");
+                if (argument->short_name != NULL) {
+                        string_builder_append(&sb, argument->short_name);
+                }
+                if (argument->long_name != NULL) {
+                        string_builder_append(&sb, argument->short_name);
+                }
+                char *str;
+                string_builder_build(&sb, &str);
+        
+                printf("%-40s  ; %s\n", str, argument->description);
+
+                string_builder_delete(&sb);
+                free(str);
+        }
+        return DS_NO_ERROR;
+}
+
+int ap_parser_delete(struct ap_parser_t *parser) {
+        if (parser == NULL) {
+                return DS_ARGUMENT_ERROR;
+        }
+
+        return vector_delete(&parser->arguments);
 }
 
 #endif // DS_IMPLEMENTATION

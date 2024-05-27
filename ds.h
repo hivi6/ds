@@ -41,7 +41,7 @@ int string_builder_appendn(struct string_builder_t *sb, const char *str,
 int string_builder_append(struct string_builder_t *sb, const char *str);
 int string_builder_appendc(struct string_builder_t *sb, char ch);
 int string_builder_appendcn(struct string_builder_t *sb, char ch, int len);
-char string_builder_get(struct string_builder_t *sb, int index);
+int string_builder_get(struct string_builder_t *sb, int index, char *ch);
 int string_builder_set(struct string_builder_t *sb, int index, char ch);
 int string_builder_build(struct string_builder_t *sb, char **str);
 void string_builder_delete(struct string_builder_t *sb);
@@ -280,14 +280,9 @@ void string_builder_delete(struct string_builder_t *sb) {
 
 // get the character at a given index
 // 
-// returns character value at a given index
-// returns 0 if something went wrong
-char string_builder_get(struct string_builder_t *sb, int index) {
-        char ch;
-        if (vector_get(&sb->chars, index, (void*)&ch, sizeof(ch))) {
-                return 0;
-        }
-        return ch;
+// returns 0 if nothing goes wrong
+int string_builder_get(struct string_builder_t *sb, int index, char *ch) {
+        return vector_get(&sb->chars, index, (void*)&ch, sizeof(char));
 }
 
 // set the character at a given index

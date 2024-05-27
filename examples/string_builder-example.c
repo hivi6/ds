@@ -28,7 +28,9 @@ int main() {
         string_builder_appendf(&sb, " abc-%d", 1000);
 
         // get the character at a given index
-        printf("0th index: %c\n", string_builder_get(&sb, 0));
+        char ch = 0;
+        string_builder_get(&sb, 0, &ch);
+        printf("0th index: %c\n", ch);
 
         // set the character at a given index
         printf("Changing 0th index to ' '\n");

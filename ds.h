@@ -5,7 +5,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-enum ds_error_t {
+enum ds_error_enum {
         DS_NO_ERROR = 0,        // when there is no error
         DS_ARGUMENT_ERROR,      // errors related to function arguments
         DS_MALLOC_ERROR,        // error related to broken malloc
@@ -15,7 +15,7 @@ enum ds_error_t {
         DS_NUM_OF_ERRORS        // this is not an error
 };
 
-void ds_print_error(enum ds_error_t);
+void ds_print_error(enum ds_error_enum);
 
 // vector
 //
@@ -67,7 +67,7 @@ int string_builder_delete(struct string_builder_t *sb);
 
 #ifdef DS_IMPLEMENTATION
 
-void ds_print_error(enum ds_error_t err) {
+void ds_print_error(enum ds_error_enum err) {
         const char *error_msgs[DS_NUM_OF_ERRORS] = {
                 "no error",
                 "invalid argument",

@@ -564,7 +564,13 @@ int ap_parser_usage(struct ap_parser_t *parser) {
                         string_builder_append(&sb, argument->short_name);
                 }
                 if (argument->long_name != NULL) {
-                        string_builder_append(&sb, argument->short_name);
+                        if (argument->short_name != NULL) {
+                                string_builder_append(&sb, ", ");
+                        }
+                        string_builder_append(&sb, argument->long_name);
+                }
+                if (argument->type == AP_FVALUE) {
+                        string_builder_append(&sb, " <value>");
                 }
                 char *str;
                 string_builder_build(&sb, &str);
